@@ -3,8 +3,8 @@ class HomeController < ApplicationController
   end
 
   def cmd_exec()
-    f_in = "tmp/user_scripts/" + session[:user_id] + ".sh"
-    f_out = "tmp/user_output/" + session[:user_id] + ".log"
+    f_in = "scripts/user_scripts/" + session[:user_id] + ".sh"
+    f_out = "scripts/user_output/" + session[:user_id] + ".log"
     data = params[:cmd].gsub("\r", "\n");
     data += "\nrm #{f_in}"
     File.open(f_in, "w+") do |f|
@@ -15,7 +15,7 @@ class HomeController < ApplicationController
   end
 
   def log_print()
-    f_out = "tmp/user_output/" + session[:user_id] + ".log"
+    f_out = "scripts/user_output/" + session[:user_id] + ".log"
   	data = File.read(f_out)
   	render json: data.gsub("\n", "<br>")
   end
