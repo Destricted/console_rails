@@ -4,19 +4,45 @@ class HomeController < ApplicationController
 
   def cmd_exec()
     f_in = "scripts/user_scripts/" + session[:user_id] + ".sh"
-    f_out = "scripts/user_output/" + session[:user_id] + ".log"
     data = params[:cmd].gsub("\r", "\n");
-    data += "\nrm #{f_in}"
+
     File.open(f_in, "w+") do |f|
       f.write(data)
     end
-  	system("sh #{f_in} 2>&1 | tee #{f_out} &") 
-  	render nothing: true
+
+    process = ChildProcess.build("sh","#{f_in}")
+    process.io.stdout = File.new('std.out', 'w+')
+    process.io.stderr = File.new('std.err', 'w+')
+
+    stdout = File.open('std.out', 'r')
+    stderr = File.open('std.err', 'r')
+
+    process.start
+
+    while !process.exited?
+      get_out_str(stdout)
+    end 
+
+    render :nothing => true
   end
 
-  def log_print()
-    f_out = "scripts/user_output/" + session[:user_id] + ".log"
-  	data = File.read(f_out)
-  	render json: data.gsub("\n", "<br>")
+  def msg(m)
+    cmd = "curl http://localhost:9292/faye -d 'message={\"channel\":\"/home/create\", \"data\":{\"text\":\"#{m}\"}}'"
+    curl_proc = ChildProcess.build("sh", "-c",  cmd)
+    curl_proc.start
   end
+
+  def get_out_str(io)
+    rStr = ''
+    while (rStr[-1..-1] != $/)
+      newChunk=nil
+      while ((newChunk = io.gets) == nil)
+        sleep 0.1
+      end
+      rStr.concat(newChunk)
+      msg(newChunk.gsub("\n","<br>"))
+    end
+    return rStr
+  end
+
 end

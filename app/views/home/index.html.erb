@@ -1,24 +1,20 @@
-<%= form_tag('/cmd_exec', remote: true, id: 'cmd_form') do  %>
-	<%= text_area_tag 'cmd', nil, :size => '50x20' %>
-	<%= submit_tag('Run', id: 'submit') %>
+<script type="text/javascript" src="http://localhost:9292/faye/client.js"> </script>
+
+<script type="text/javascript">
+        var client = new Faye.Client('http://localhost:9292/faye');
+        var msg = client.subscribe('/home/create', function(message) {
+                $("#content").append(message.text);
+        });
+        $(function() {
+        $( "#submit" ).click(function() {
+              $("#content").empty();
+            });
+        });
+</script>
+
+<%= form_tag('/cmd_exec', remote:'true', id: 'cmd_form') do  %>
+  <%= text_area_tag 'cmd', nil, :size => '50x20' %>
+  <%= submit_tag('Run', id: 'submit') %>
 <% end %>
 
 <div id="content"></div>
-
-<script type="text/javascript">
-	$( "#submit" ).click(function( event ) {
-  	$.PeriodicalUpdater('/log_print', {
-          method: 'post',         
-          data: '',               
-          minTimeout: 500,     
-          maxTimeout: 2000,     
-          multiplier: 2,       
-          type: 'text',  
-          maxCalls: 0,       
-          verbose: 0 ,
-          autoStop: 30
-      }, function(remoteData, success, xhr, handle) {
-           $('#content').html(remoteData);
-      });
-	});
-</script>
