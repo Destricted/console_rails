@@ -19,6 +19,7 @@ gem 'faye'
 gem 'thin'
 gem "eventmachine"
 gem "childprocess"
+gem "popen4"
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
 # gem 'therubyracer', platforms: :ruby
